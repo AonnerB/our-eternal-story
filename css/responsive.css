@@ -1,0 +1,128 @@
+/* ============================================================================
+   RESPONSIVE.CSS
+   O projeto é pensado primeiro para o celular, que é onde ela vai abrir.
+   Os ajustes aqui tratam telas grandes, telas baixas e paisagem.
+   ========================================================================== */
+
+/* ---------------------------------------------------------------
+   Celular pequeno (a partir de 320px)
+   --------------------------------------------------------------- */
+@media (max-width: 480px) {
+  /* No celular a lua encosta mais no canto, para não competir
+     com o texto no centro da tela. */
+  .moon-wrap { top: 4vh; right: 5vw; }
+  body[data-scene="abertura"] .moon-wrap { top: 6vh; right: 6vw; }
+  body[data-scene="pedido"] .moon-wrap { transform: scale(1.12); }
+
+  :root {
+    --t-md: 1.1rem;
+    --medida: 30ch;
+    --espaco: 1.1rem;
+  }
+
+  .titulo-principal { font-size: clamp(2.1rem, 11vw, 2.9rem); }
+  .titulo-capitulo  { font-size: clamp(1.5rem, 7.5vw, 2rem); }
+
+  .scene > * + * { margin-top: 1.1rem; }
+
+  /* Os três medalhões ficam lado a lado, menores */
+  .medalhoes { gap: 1rem; }
+  .medalhao { width: 88px; height: 108px; }
+  .medalhao .icone { font-size: 1.45rem; }
+  .medalhao .legenda { font-size: .64rem; bottom: -1.4rem; }
+  .progresso { margin-top: 2.1rem; }
+
+  .lista-amor li { grid-template-columns: 2.2rem 1fr; padding: .75rem 0; }
+
+  .carta .corpo { font-size: 1.24rem; line-height: 1.8; }
+
+  .foto { max-width: 78vw; padding: 10px 10px 46px; }
+  .foto figcaption { font-size: 1.02rem; bottom: 11px; }
+
+  .retratos { gap: 1rem; }
+  .retrato { width: 42vw; }
+
+  .envelope { width: 84vw; }
+  .lacre { width: 52px; height: 52px; font-size: 1.1rem; }
+
+  #whisper { font-size: 1.15rem; bottom: 13vh; }
+
+  /* O painel de volume não abre no toque: o botão alterna a música
+     e um toque longo não é descoberto por ninguém. Mostramos o
+     controle sempre. */
+  .audio-panel { width: 78px; }
+  #volume { width: 78px; }
+}
+
+/* ---------------------------------------------------------------
+   Celular bem estreito (320px): a lua precisa encolher, senão ela
+   invade o título no meio da tela.
+   --------------------------------------------------------------- */
+@media (max-width: 360px) {
+  .moon { width: clamp(72px, 24vmin, 110px); height: clamp(72px, 24vmin, 110px); }
+  .moon-wrap { top: 3vh; right: 3vw; }
+  body[data-scene="abertura"] .moon-wrap { top: 4vh; right: 4vw; }
+  .teia { width: clamp(72px, 22vw, 110px); height: clamp(72px, 22vw, 110px); }
+  .arvore { width: clamp(96px, 32vw, 150px); }
+}
+
+/* ---------------------------------------------------------------
+   Telas baixas (celular na horizontal, notebooks curtos)
+   --------------------------------------------------------------- */
+@media (max-height: 560px) {
+  :root { --espaco: .8rem; }
+
+  .moon-wrap { top: 4vh !important; right: 4vw !important; transform: scale(.62) !important; }
+  body[data-scene="pedido"] .moon-wrap { transform: scale(.85) !important; }
+
+  .treeline { height: 26vh; }
+
+  .scene > * + * { margin-top: .85rem; }
+  .titulo-principal { font-size: clamp(1.8rem, 7vh, 2.6rem); }
+  .foto { max-width: 42vw; }
+  .envelope { width: min(18rem, 60vw); }
+}
+
+/* ---------------------------------------------------------------
+   Tablet
+   --------------------------------------------------------------- */
+@media (min-width: 768px) {
+  .medalhao { width: 116px; height: 142px; }
+  .retrato { width: 13rem; }
+}
+
+/* ---------------------------------------------------------------
+   Desktop grande
+   --------------------------------------------------------------- */
+@media (min-width: 1200px) {
+  :root { --t-md: 1.3rem; --medida: 36ch; }
+  .scene { max-width: 48rem; }
+}
+
+/* ---------------------------------------------------------------
+   Telas muito largas: a lua não pode ficar gigante
+   --------------------------------------------------------------- */
+@media (min-aspect-ratio: 2/1) {
+  .moon { width: clamp(104px, 16vmin, 200px); height: clamp(104px, 16vmin, 200px); }
+  .moon-wrap { right: 10vw; }
+}
+
+/* ---------------------------------------------------------------
+   Ponteiro grosso (dedo): alvos maiores e nada de efeito de hover
+   dependente de mouse
+   --------------------------------------------------------------- */
+@media (pointer: coarse) {
+  .botao { padding: 1rem 2rem; min-height: 52px; }
+  .pista-secreta { opacity: .45; }
+  .foto:hover { transform: rotate(-2.2deg); }
+}
+
+/* ---------------------------------------------------------------
+   Impressão: não é o objetivo do projeto, mas se alguém imprimir,
+   que ao menos saia legível.
+   --------------------------------------------------------------- */
+@media print {
+  #sky, #particles, #grain, #audio-control, #curtain, #loader { display: none !important; }
+  body { background: #fff; color: #000; }
+  .scene { max-width: 100%; }
+}

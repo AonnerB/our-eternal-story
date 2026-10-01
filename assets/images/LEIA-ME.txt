@@ -1,0 +1,22 @@
+COLOQUE SUAS FOTOS AQUI
+=======================
+
+Os nomes que o projeto procura (definidos em config.js):
+
+  primeiro-encontro.jpg   -> Capítulo I
+  memoria1.jpg            -> Memória I
+  memoria2.jpg            -> Memória II
+  memoria3.jpg            -> Memória III
+  retrato1.jpg            -> Capítulo III (moldura oval)
+  retrato2.jpg            -> Capítulo III (moldura oval)
+  jogo1.jpg a jogo4.jpg   -> Jogo da memória (segredo: 3 toques na lua)
+
+Dicas:
+- .jpg ou .webp funcionam bem. Evite arquivos acima de 500 KB.
+- As fotos dos retratos ficam melhores em formato retrato (3x4).
+- As fotos do jogo da memória ficam melhores quadradas ou bem
+  próximas disso — cada uma vira uma cartinha pequena.
+- Se você não colocar uma foto, ela simplesmente não aparece.
+  A história continua bonita e completa sem nenhuma imagem. No
+  jogo da memória, cada par sem foto usa um símbolo no lugar.
+- Para usar outro nome de arquivo, é só mudar o caminho no config.js.

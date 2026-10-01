@@ -1,0 +1,12 @@
+FONTES
+======
+
+O projeto usa Cinzel Decorative, Cormorant Garamond e La Belle Aurore,
+carregadas do Google Fonts pelo index.html.
+
+Se você quiser que funcione totalmente sem internet, baixe os arquivos
+.woff2 dessas fontes, coloque nesta pasta e declare com @font-face
+no topo do css/style.css.
+
+Sem internet e sem os arquivos aqui, o site cai para Georgia. Continua
+legível e bonito, só perde um pouco da personalidade dos títulos.

@@ -1,0 +1,11 @@
+COLOQUE SUA MÚSICA AQUI
+=======================
+
+Nome esperado: tema.mp3
+
+- Use uma faixa de piano, instrumental e calma.
+- Só use música que você tenha o direito de usar. Existem trilhas
+  gratuitas em bibliotecas de áudio livre.
+- Se não houver arquivo, o botão de música nem aparece e o site
+  funciona normalmente, em silêncio.
+- Para usar outro nome, mude CONFIG.audio.arquivo no config.js.

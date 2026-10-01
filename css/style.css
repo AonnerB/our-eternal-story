@@ -1,0 +1,1337 @@
+/* ============================================================================
+   STYLE.CSS — paleta, tipografia, céu e componentes
+   Ordem do arquivo:
+   1. Tokens    2. Base    3. Céu    4. Palco e cenas    5. Componentes
+   6. Cartas e envelope    7. Fotos    8. Áudio    9. Utilidades
+   ========================================================================== */
+
+/* ---------------------------------------------------------------
+   1. TOKENS
+   Para mudar as cores do site inteiro, mexa só aqui.
+   --------------------------------------------------------------- */
+:root {
+  --noite:      #080C16;
+  --breu:       #101A2C;
+  --azul-frio:  #1B3048;
+  --luar:       #8EB5D8;
+  --pergaminho: #D9D2BD;
+  --luz:        #E9EDF4;
+  --borboleta:  #5FA8D3;
+  --brasa:      #C89B5A;  /* dourado: só entra a partir do Capítulo IV */
+  --vinho:      #6E2436;
+
+  /* Tipografia */
+  --fonte-titulo: "Cinzel Decorative", "Cormorant Garamond", Georgia, serif;
+  --fonte-corpo: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --fonte-mao: "La Belle Aurore", "Cormorant Garamond", cursive;
+
+  /* Escala de tipo (proporção 1.333) */
+  --t-xs:  0.8rem;
+  --t-sm:  1rem;
+  --t-md:  1.22rem;
+  --t-lg:  1.63rem;
+  --t-xl:  2.17rem;
+  --t-2xl: 2.9rem;
+  --t-3xl: 3.85rem;
+
+  /* Ritmo */
+  --espaco: clamp(1rem, 3vw, 2rem);
+  --medida: 34ch;        /* largura de leitura confortável */
+
+  /* Estado controlado por JS, cena a cena */
+  --intensidade-lua: 0.55;
+  --calor: 0;            /* 0 = frio, 1 = dourado */
+}
+
+/* ---------------------------------------------------------------
+   2. BASE
+   --------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;              /* a navegação é por cenas, não por scroll */
+  overscroll-behavior: none;
+}
+
+body {
+  background: var(--noite);
+  color: var(--luz);
+  font-family: var(--fonte-corpo);
+  font-size: var(--t-md);
+  font-weight: 300;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1, h2, h3 {
+  font-family: var(--fonte-titulo);
+  font-weight: 400;
+  line-height: 1.15;
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+p { margin: 0 0 1.1em; }
+p:last-child { margin-bottom: 0; }
+
+button { font: inherit; color: inherit; }
+
+/* Foco visível e coerente com o projeto */
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid var(--luar);
+  outline-offset: 5px;
+  border-radius: 2px;
+}
+
+::selection { background: var(--azul-frio); color: var(--luz); }
+
+/* ---------------------------------------------------------------
+   3. CÉU
+   --------------------------------------------------------------- */
+#sky {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 90% at 50% 8%, #16253C 0%, #0C1524 42%, var(--noite) 78%);
+  transition: filter 2.4s ease;
+}
+
+.stars {
+  position: absolute;
+  inset: 0;
+  opacity: 0.7;
+  transition: opacity 1.6s ease;
+}
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: var(--luz);
+}
+
+/* --- Lua ---
+   Fica no canto superior direito, como um farol da cena.
+   A posição e o tamanho mudam de cena em cena. --- */
+.moon-wrap {
+  position: absolute;
+  top: 6vh;
+  right: 7vw;
+  transition: top 2.6s cubic-bezier(.22,.61,.36,1),
+              right 2.6s cubic-bezier(.22,.61,.36,1),
+              transform 2.6s cubic-bezier(.22,.61,.36,1);
+}
+body[data-scene="abertura"] .moon-wrap { top: 9vh; right: 9vw; }
+body[data-scene="transicao"] .moon-wrap { top: 5vh; right: 5vw; transform: scale(.72); }
+body[data-scene="pedido"]   .moon-wrap { top: 5vh; right: 8vw; transform: scale(1.3); }
+body[data-scene="desfecho"] .moon-wrap { top: 8vh; right: 12vw; transform: scale(.9); }
+
+.moon {
+  position: relative;
+  display: block;
+  width: clamp(88px, 22vmin, 230px);
+  height: clamp(88px, 22vmin, 230px);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: filter 1.8s ease;
+}
+
+.moon-disc {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  filter: drop-shadow(0 0 26px rgba(233, 237, 244, calc(var(--intensidade-lua) * 0.45)));
+  transition: filter 1.8s ease;
+}
+
+/* Dois halos sobrepostos: um largo e difuso, outro curto e intenso.
+   É a diferença entre uma bola branca e uma lua de verdade. */
+.moon-halo {
+  position: absolute;
+  inset: -85%;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle,
+    rgba(142, 181, 216, calc(var(--intensidade-lua) * 0.30)) 0%,
+    rgba(142, 181, 216, calc(var(--intensidade-lua) * 0.13)) 30%,
+    rgba(142, 181, 216, calc(var(--intensidade-lua) * 0.04)) 52%,
+    transparent 70%);
+  transition: background 1.8s ease;
+}
+.moon-halo.interno {
+  inset: -22%;
+  background: radial-gradient(circle,
+    rgba(255, 253, 242, calc(var(--intensidade-lua) * 0.42)) 0%,
+    rgba(200, 220, 240, calc(var(--intensidade-lua) * 0.18)) 44%,
+    transparent 72%);
+}
+
+/* No pedido, a lua esquenta junto com o resto da tela */
+body[data-act="3"] .moon-halo {
+  background: radial-gradient(circle,
+    rgba(200, 155, 90, calc(var(--intensidade-lua) * 0.24)) 0%,
+    rgba(142, 181, 216, calc(var(--intensidade-lua) * 0.14)) 36%,
+    transparent 70%);
+}
+
+/* --- Brilho dourado: só aparece no fim da história --- */
+.warm-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--calor);
+  transition: opacity 3s ease;
+  background:
+    radial-gradient(90% 60% at 50% 108%, rgba(200, 155, 90, 0.42) 0%, transparent 62%),
+    radial-gradient(60% 40% at 50% 12%, rgba(200, 155, 90, 0.14) 0%, transparent 70%);
+}
+
+/* --- Horizonte ---
+   Uma faixa de luz da lua presa na névoa, logo acima das árvores.
+   É o fundo contra o qual as silhuetas existem: sem ela, preto sobre
+   preto, e o bosque inteiro desaparece. */
+.horizonte {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 52vh;
+  pointer-events: none;
+  background:
+    radial-gradient(130% 100% at 50% 100%,
+      rgba(128, 166, 202, .30) 0%,
+      rgba(96, 130, 168, .17) 26%,
+      rgba(64, 90, 124, .07) 48%,
+      transparent 74%);
+  transition: background 2.6s ease;
+}
+/* No terceiro ato o horizonte esquenta junto com o resto da tela */
+body[data-act="3"] .horizonte {
+  background:
+    radial-gradient(130% 100% at 50% 100%,
+      rgba(170, 146, 116, .30) 0%,
+      rgba(118, 124, 148, .17) 26%,
+      rgba(70, 92, 124, .07) 48%,
+      transparent 74%);
+}
+
+/* --- Árvores ---
+   Cada camada é um desenho que se repete na horizontal. Repetir em
+   vez de esticar é o que faz a mata funcionar tanto num celular
+   estreito quanto num monitor largo, sem deformar nenhuma copa. */
+.treeline {
+  position: absolute;
+  left: -6%;
+  bottom: 0;
+  width: 112%;
+  background-repeat: repeat-x;
+  background-position: bottom center;
+  background-size: auto 100%;
+  transform-origin: 50% 100%;
+  pointer-events: none;
+  will-change: transform;
+}
+.treeline-longe {
+  height: 27vh;
+  min-height: 130px;
+  opacity: .9;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20560%20320%22%20width%3D%22560%22%20height%3D%22320%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20d%3D%22M0%20320L0%20228L10.9%20228.0L8.8%20216.7L10.5%20207.8L14.9%20200.4L17.1%20195.7L19.7%20187.6L22.2%20177.5L26.8%20173.9L31.1%20178.5L35.3%20180.5L39.5%20182.2L43.3%20181.3L47.8%20187.2L49.0%20199.2L51.7%20206.3L51.0%20217.9L54.6%20228.0L65.8%20228.0L70.8%20220.8L75.9%20218.7L75.4%20211.5L80.8%20209.4L83.1%20202.2L85.5%20200.1L88.1%20192.9L89.8%20190.8L93.3%20183.6L93.3%20181.5L93.3%20181.5L93.3%20181.5L93.3%20183.6L96.9%20190.8L98.5%20192.9L101.2%20200.1L103.5%20202.2L105.9%20209.4L111.3%20211.5L110.8%20218.7L115.8%20220.8L120.8%20228.0L128.5%20228.0L133.4%20220.9L138.4%20218.8L137.9%20211.7L143.2%20209.6L145.5%20202.5L147.8%20200.4L150.4%20193.3L152.1%20191.2L155.6%20184.1L155.6%20182.0L155.6%20182.0L155.6%20182.0L155.6%20184.1L159.0%20191.2L160.7%20193.3L163.3%20200.4L165.6%20202.5L167.9%20209.6L173.2%20211.7L172.8%20218.8L177.7%20220.9L182.7%20228.0L196.8%20228.0L200.6%20218.9L204.5%20216.3L204.1%20207.1L208.2%20204.5L210.0%20195.4L211.8%20192.8L213.8%20183.6L215.1%20181.0L217.8%20171.9L217.8%20169.3L217.8%20169.3L217.8%20169.3L217.8%20171.9L220.5%20181.0L221.7%20183.6L223.8%20192.8L225.6%20195.4L227.3%20204.5L231.5%20207.1L231.1%20216.3L234.9%20218.9L238.8%20228.0L248.4%20228.0L254.2%20218.9L260.0%20216.3L259.4%20207.3L265.6%20204.6L268.3%20195.6L271.0%20192.9L274.0%20183.9L275.9%20181.3L280.0%20172.2L280.0%20169.6L280.0%20169.6L280.0%20169.6L280.0%20172.2L284.1%20181.3L286.0%20183.9L289.0%20192.9L291.7%20195.6L294.4%20204.6L300.6%20207.3L300.0%20216.3L305.8%20218.9L311.6%20228.0L312.2%20228.0L315.6%20218.8L317.1%20208.5L317.5%20197.9L320.7%20191.0L327.8%20188.0L331.5%20184.0L337.1%20180.0L342.2%20177.3L347.8%20178.8L353.0%20183.1L357.4%20188.6L360.5%20193.8L366.3%20199.7L369.1%20210.0L372.7%20217.9L372.9%20228.0L378.6%20228.0L381.0%20216.4L381.2%20204.4L385.2%20196.5L386.9%20187.0L390.8%20179.9L395.5%20172.4L400.0%20175.9L404.4%20169.0L408.8%20176.7L413.8%20173.3L418.8%20179.0L420.9%20189.4L427.1%20192.7L428.6%20205.2L427.0%20217.6L429.5%20228.0L434.6%20228.0L440.5%20220.9L446.4%20218.9L445.8%20211.8L452.1%20209.8L454.8%20202.7L457.5%20200.6L460.6%20193.6L462.5%20191.5L466.7%20184.5L466.7%20182.4L466.7%20182.4L466.7%20182.4L466.7%20184.5L470.8%20191.5L472.7%20193.6L475.8%20200.6L478.5%20202.7L481.3%20209.8L487.5%20211.8L487.0%20218.9L492.9%20220.9L498.7%20228.0L507.2%20228.0L511.2%20220.4L515.2%20218.2L514.8%20210.6L519.0%20208.4L520.9%20200.9L522.7%20198.7L524.8%20191.1L526.1%20188.9L528.9%20181.3L528.9%20179.1L528.9%20179.1L528.9%20179.1L528.9%20181.3L531.7%20188.9L533.0%20191.1L535.1%20198.7L536.9%20200.9L538.8%20208.4L543.0%20210.6L542.6%20218.2L546.6%20220.4L550.5%20228.0L560%20228L560%20320Z%22%20fill%3D%22%230B1322%22%2F%3E%3C%2Fsvg%3E");
+}
+.treeline-perto {
+  height: 34vh;
+  min-height: 160px;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20460%20320%22%20width%3D%22460%22%20height%3D%22320%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20d%3D%22M0%20320L0%20258L-5.7%20258.0L-7.5%20242.1L-2.8%20228.2L-0.3%20210.0L3.8%20199.1L8.8%20181.4L18.3%20186.0L24.9%20178.6L32.9%20166.4L39.9%20183.1L47.5%20185.9L54.3%20184.0L58.3%20205.5L69.0%20210.0L72.0%20223.5L74.6%20239.4L70.3%20258.0L67.2%20258.0L72.9%20239.6L78.7%20234.3L78.1%20215.9L84.3%20210.6L86.9%20192.3L89.6%20186.9L92.6%20168.6L94.5%20163.2L98.6%20144.9L98.6%20139.5L98.6%20139.5L98.6%20139.5L98.6%20144.9L102.6%20163.2L104.5%20168.6L107.5%20186.9L110.2%20192.3L112.9%20210.6L119.0%20215.9L118.5%20234.3L124.2%20239.6L129.9%20258.0L130.4%20258.0L133.3%20242.4L132.7%20226.1L137.1%20214.8L140.6%20195.9L148.2%20196.8L151.6%20181.2L158.3%20175.9L164.3%20186.3L169.9%20187.8L175.6%20183.6L180.7%20190.9L188.0%20199.7L190.4%20216.6L194.1%20225.6L198.4%20240.4L193.1%20258.0L192.4%20258.0L199.3%20245.2L206.2%20241.5L205.5%20228.7L212.9%20225.0L216.1%20212.2L219.3%20208.5L222.9%20195.7L225.2%20192.0L230.0%20179.2L230.0%20175.5L230.0%20175.5L230.0%20175.5L230.0%20179.2L234.8%20192.0L237.1%20195.7L240.7%20208.5L243.9%20212.2L247.1%20225.0L254.5%20228.7L253.8%20241.5L260.7%20245.2L267.6%20258.0L261.3%20258.0L260.3%20239.3L263.4%20225.9L267.9%20213.4L269.7%20188.8L276.7%20184.8L281.0%20167.5L288.7%20169.3L295.7%20182.2L302.2%20176.1L310.3%20164.7L316.4%20187.0L320.3%20194.1L327.7%20208.9L331.1%20222.6L333.3%20240.7L328.3%20258.0L333.2%20258.0L338.3%20241.5L343.5%20236.7L343.0%20220.2L348.6%20215.4L350.9%20198.9L353.3%20194.1L356.1%20177.7L357.8%20172.9L361.4%20156.4L361.4%20151.6L361.4%20151.6L361.4%20151.6L361.4%20156.4L365.1%20172.9L366.8%20177.7L369.5%20194.1L371.9%20198.9L374.3%20215.4L379.8%20220.2L379.4%20236.7L384.6%20241.5L389.7%20258.0L381.5%20258.0L388.6%20244.5L389.1%20228.8L393.9%20217.8L396.9%20203.5L404.2%20194.8L409.0%20182.2L419.1%20185.6L427.1%20185.1L435.6%20180.7L443.6%20186.5L449.3%20197.0L458.1%20196.3L463.0%20210.1L467.1%20226.5L465.9%20243.5L465.6%20258.0L460%20258L460%20320Z%22%20fill%3D%22%2304070D%22%2F%3E%3C%2Fsvg%3E");
+}
+
+/* As duas árvores dos cantos: o primeiro plano da cena. Ficam presas
+   ao pé da tela e emolduram tudo o que acontece no meio. */
+.arvore {
+  position: absolute;
+  bottom: 0;
+  height: 46vh;
+  max-height: 430px;
+  width: clamp(120px, 26vw, 260px);
+  pointer-events: none;
+  opacity: .95;
+  transform-origin: 50% 100%;
+  will-change: transform;
+}
+.arvore-esq { left: -3vw; }
+.arvore-dir { right: -3vw; }
+
+/* --- Névoa ---
+   Cada camada é um bloco que se repete. As manchas ficam centradas
+   no bloco e apagam antes da borda: sem isso, o degradê é cortado no
+   meio e aparecem faixas retas no pé da tela. */
+.fog {
+  position: absolute;
+  left: -50%;
+  width: 200%;
+  pointer-events: none;
+  background-repeat: repeat-x;
+  will-change: transform;
+}
+.fog-back {
+  bottom: -7vh; height: 52vh; opacity: 0.24;
+  background-image:
+    radial-gradient(48% 62% at 50% 100%, rgba(142,181,216,.55), transparent 74%);
+  background-size: 25% 100%;
+}
+.fog-mid {
+  bottom: -9vh; height: 45vh; opacity: 0.3;
+  background-image:
+    radial-gradient(46% 66% at 50% 100%, rgba(197,214,232,.48), transparent 76%);
+  background-size: 16.6667% 100%;
+}
+.fog-front {
+  bottom: -15vh; height: 40vh; opacity: 0.34;
+  background-image:
+    radial-gradient(44% 64% at 50% 100%, rgba(217,210,189,.46), transparent 76%);
+  background-size: 12.5% 100%;
+}
+
+/* Um lençol de bruma parado no chão, por baixo de tudo: é ele que
+   faz a silhueta e as árvores parecerem mergulhadas na névoa em vez
+   de coladas por cima dela. */
+.fog-chao {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 40vh;
+  pointer-events: none;
+  background: linear-gradient(to top,
+    rgba(158, 190, 220, .22) 0%,
+    rgba(142, 181, 216, .11) 34%,
+    transparent 78%);
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(118% 88% at 50% 44%, transparent 44%, rgba(4,7,13,0.62) 100%),
+    linear-gradient(to bottom, rgba(4,7,13,.34) 0%, transparent 22%);
+}
+
+/* --- Teias de aranha ---
+   Só aparecem nos capítulos de tom mais melancólico: o início da
+   história e o momento antes da carta. Somem no resto — o pedido
+   e o desfecho ficam limpos, sem nada preso a eles. */
+.teia {
+  position: absolute;
+  width: clamp(88px, 16vw, 180px);
+  height: clamp(88px, 16vw, 180px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 2.4s ease;
+}
+.teia-fios { transform-origin: 2px 2px; }
+.teia-esq { top: 0; left: 0; }
+.teia-dir { bottom: 0; right: 0; transform: rotate(180deg); }
+
+body[data-scene="capitulo1"] .teia,
+body[data-scene="capitulo2"] .teia,
+body[data-scene="capitulo4"] .teia {
+  opacity: .6;
+}
+
+.orvalho circle {
+  animation: cintilar 6s steps(6) infinite;
+}
+.orvalho circle:nth-child(2) { animation-delay: 1.2s; }
+.orvalho circle:nth-child(3) { animation-delay: 2.4s; }
+.orvalho circle:nth-child(4) { animation-delay: 3.6s; }
+.orvalho circle:nth-child(5) { animation-delay: 4.8s; }
+
+/* A aranha que mora na teia da esquerda. Ela quase não se mexe — só
+   ajusta as pernas de vez em quando, como quem espera. */
+.teia-aranha { transform-origin: 58px 62px; }
+
+/* --- Constelação em coração ---
+   Fica no canto superior esquerdo, longe da lua. Some até o
+   Capítulo IV; a partir do terceiro ato, acende devagar. */
+#constelacao {
+  position: absolute;
+  top: 7vh;
+  left: 5vw;
+  width: min(40vmin, 320px);
+  height: min(26vmin, 210px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 2.2s ease;
+}
+body[data-act="3"] #constelacao { opacity: 1; }
+
+#constelacao-linha {
+  opacity: 0;
+  transition: opacity 3.2s ease 1.4s;
+}
+body[data-act="3"] #constelacao-linha { opacity: 1; }
+
+.estrela-coracao {
+  fill: #F3F6FA;
+  opacity: 0;
+  transition: opacity 1.1s ease;
+}
+body[data-act="3"] .estrela-coracao { opacity: .92; }
+
+/* --- Canvas de partículas --- */
+#particles {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+#particles.clickable { pointer-events: auto; }
+
+/* --- Grão de filme --- */
+#grain {
+  position: fixed;
+  inset: -50%;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------------------------------------------------------------
+   4. PALCO E CENAS
+   --------------------------------------------------------------- */
+#stage {
+  position: relative;
+  z-index: 3;
+  transition: filter .8s ease, transform .8s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  height: 100dvh;
+  padding: max(var(--espaco), env(safe-area-inset-top))
+           var(--espaco)
+           max(var(--espaco), env(safe-area-inset-bottom));
+}
+
+body.virando #stage { filter: blur(5px); transform: scale(.985); }
+
+.scene {
+  position: relative;
+  width: 100%;
+  max-width: 44rem;
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  text-align: center;
+  scrollbar-width: thin;
+  scrollbar-color: var(--azul-frio) transparent;
+  /* espaço extra embaixo: o botão nunca encosta na borda nem fica
+     escondido atrás do controle de música */
+  padding: 0.5rem 0 4.5rem;
+}
+
+/* Aviso de que a cena continua abaixo. Sem isso, em telas pequenas
+   o botão some sem que ninguém perceba que dá para rolar. */
+.rolar {
+  position: absolute;
+  left: 50%;
+  bottom: .4rem;
+  transform: translateX(-50%);
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--luar);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .6s ease, visibility .6s;
+}
+.rolar.visivel { opacity: .75; visibility: visible; }
+.rolar:hover, .rolar:focus-visible { opacity: 1; }
+
+/* Degradê no pé do palco, indicando continuidade */
+#stage::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 7rem;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .6s ease;
+  background: linear-gradient(to top, rgba(8,12,22,.92), transparent);
+}
+#stage.tem-mais::after { opacity: 1; }
+.scene::-webkit-scrollbar { width: 5px; }
+.scene::-webkit-scrollbar-thumb { background: var(--azul-frio); border-radius: 3px; }
+
+.scene > * + * { margin-top: 1.4rem; }
+
+/* Cortina de transição */
+#curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background:
+    radial-gradient(120% 92% at 50% 50%,
+      rgba(8, 12, 22, .88) 0%,
+      rgba(6, 9, 17, .97) 46%,
+      var(--noite) 72%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 900ms ease;
+}
+#curtain.fechada { opacity: 1; pointer-events: auto; } /* bloqueia cliques perdidos durante a troca de cena */
+
+/* ---------------------------------------------------------------
+   5. COMPONENTES DE TEXTO
+   --------------------------------------------------------------- */
+.rotulo {
+  font-family: var(--fonte-titulo);
+  font-size: var(--t-sm);
+  letter-spacing: 0.22em;
+  color: var(--luar);
+  opacity: 0.85;
+}
+
+.sobretitulo {
+  font-family: var(--fonte-corpo);
+  font-style: italic;
+  font-size: var(--t-sm);
+  letter-spacing: 0.18em;
+  color: var(--luar);
+}
+
+.titulo-principal {
+  font-size: clamp(2.4rem, 9vw, var(--t-3xl));
+  color: var(--luz);
+  text-shadow: 0 0 34px rgba(142, 181, 216, 0.28);
+}
+
+/* Um fio de luz atravessa o título de tempos em tempos, como se a lua
+   passasse por cima das letras. Só onde o navegador sabe recortar o
+   fundo no formato do texto — se não souber, o título fica sólido. */
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .titulo-principal {
+    background-image: linear-gradient(104deg,
+      var(--luz) 0%, var(--luz) 40%,
+      #FFFFFF 47%, #FFFDF4 50%, var(--luz) 60%, var(--luz) 100%);
+    background-size: 300% 100%;
+    background-position: 100% 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+}
+
+.titulo-capitulo {
+  font-size: clamp(1.7rem, 6vw, var(--t-xl));
+  color: var(--pergaminho);
+}
+
+.texto {
+  max-width: var(--medida);
+  margin-inline: auto;
+  color: var(--luz);
+  opacity: 0.92;
+}
+.texto.suave { opacity: 0.75; font-size: var(--t-sm); }
+
+.assinatura {
+  font-family: var(--fonte-mao);
+  font-size: var(--t-lg);
+  color: var(--pergaminho);
+}
+
+/* Filete decorativo entre o rótulo e o título */
+.filete {
+  width: 120px;
+  height: 1px;
+  margin: 0.4rem auto;
+  background: linear-gradient(90deg, transparent, var(--luar), transparent);
+  opacity: 0.6;
+}
+
+/* --- Botão --- */
+.botao {
+  position: relative;
+  display: inline-block;
+  margin-top: 0.6rem;
+  padding: 0.85rem 2.2rem;
+  min-height: 48px;
+  font-family: var(--fonte-titulo);
+  font-size: var(--t-sm);
+  letter-spacing: 0.14em;
+  color: var(--pergaminho);
+  background: rgba(27, 48, 72, 0.35);
+  border: 1px solid rgba(142, 181, 216, 0.45);
+  border-radius: 1px;
+  cursor: pointer;
+  transition: color .5s ease, border-color .5s ease,
+              background .5s ease, box-shadow .5s ease, transform .3s ease;
+}
+.botao::before,
+.botao::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 1px;
+  background: rgba(142, 181, 216, 0.5);
+  transition: width .5s ease, background .5s ease;
+}
+.botao::before { left: -22px; }
+.botao::after  { right: -22px; }
+
+.botao:hover,
+.botao:focus-visible {
+  color: var(--luz);
+  border-color: var(--luar);
+  background: rgba(27, 48, 72, 0.6);
+  box-shadow: 0 0 28px rgba(142, 181, 216, 0.22);
+}
+.botao:hover::before, .botao:hover::after { width: 26px; background: var(--luar); }
+.botao:active { transform: translateY(1px); }
+
+/* No fim da história o botão fica dourado */
+body[data-act="3"] .botao {
+  color: var(--brasa);
+  border-color: rgba(200, 155, 90, 0.55);
+}
+body[data-act="3"] .botao:hover,
+body[data-act="3"] .botao:focus-visible {
+  color: #F0D9B0;
+  border-color: var(--brasa);
+  box-shadow: 0 0 40px rgba(200, 155, 90, 0.3);
+}
+body[data-act="3"] .botao::before,
+body[data-act="3"] .botao::after { background: rgba(200, 155, 90, 0.55); }
+
+/* ---------------------------------------------------------------
+   6. MEMÓRIAS, CARTAS E ENVELOPE
+   --------------------------------------------------------------- */
+
+/* --- Medalhões do Capítulo II --- */
+.medalhoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(1rem, 5vw, 2.6rem);
+}
+
+.medalhao {
+  position: relative;
+  width: 104px;
+  height: 128px;
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: var(--luar);
+}
+.medalhao .selo {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(142, 181, 216, 0.4);
+  border-radius: 52px 52px 52px 52px / 60px 60px 60px 60px;
+  background:
+    radial-gradient(circle at 50% 34%, rgba(142,181,216,.14), rgba(16,26,44,.85) 70%);
+  display: grid;
+  place-items: center;
+  transition: border-color .6s ease, background .6s ease, box-shadow .6s ease;
+}
+.medalhao .icone {
+  font-size: 1.7rem;
+  line-height: 1;
+  transition: transform .6s ease, color .6s ease;
+}
+.medalhao .legenda {
+  position: absolute;
+  bottom: -1.6rem;
+  left: 0;
+  right: 0;
+  font-family: var(--fonte-titulo);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  color: var(--luar);
+  opacity: 0.6;
+}
+.medalhao:hover .selo,
+.medalhao:focus-visible .selo {
+  border-color: var(--luar);
+  box-shadow: 0 0 30px rgba(142, 181, 216, 0.25);
+}
+.medalhao:hover .icone { transform: scale(1.12); }
+
+.medalhao.aberta .selo {
+  border-color: rgba(200, 155, 90, 0.6);
+  background: radial-gradient(circle at 50% 34%, rgba(200,155,90,.18), rgba(16,26,44,.9) 70%);
+}
+.medalhao.aberta .icone { color: var(--brasa); }
+.medalhao.aberta .legenda { opacity: 0.95; color: var(--brasa); }
+
+.progresso {
+  font-size: var(--t-sm);
+  letter-spacing: 0.08em;
+  color: var(--luar);
+  opacity: 0.8;
+  margin-top: 2.4rem;
+}
+.progresso.completo { color: var(--brasa); opacity: 1; }
+
+/* --- Janela da memória aberta --- */
+.janela {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: var(--espaco);
+  background: rgba(4, 7, 13, 0.82);
+  backdrop-filter: blur(3px);
+}
+.janela-conteudo {
+  position: relative;
+  width: min(30rem, 100%);
+  max-height: 84vh;
+  overflow-y: auto;
+  padding: clamp(1.6rem, 6vw, 2.6rem);
+  background:
+    linear-gradient(180deg, rgba(217,210,189,.97), rgba(201,192,168,.94));
+  color: #2A2419;
+  box-shadow: 0 30px 70px rgba(0,0,0,.6);
+  /* Bordas irregulares, como papel rasgado */
+  clip-path: polygon(0 1.4%, 2% 0, 98% .8%, 100% 2.2%, 99.3% 97%, 97% 100%, 3% 99%, .6% 97.6%);
+  text-align: center;
+}
+.janela-conteudo h3 {
+  font-size: var(--t-lg);
+  color: #4A2B32;
+  margin-bottom: .6rem;
+}
+.janela-conteudo p { color: #3A3427; }
+.fechar-janela {
+  position: absolute;
+  top: .6rem;
+  right: .9rem;
+  width: 44px;
+  height: 44px;
+  background: none;
+  border: 0;
+  font-size: 1.5rem;
+  color: #6E2436;
+  cursor: pointer;
+  opacity: .65;
+}
+.fechar-janela:hover { opacity: 1; }
+
+/* --- Lista do Capítulo III --- */
+.lista-amor {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  max-width: 30rem;
+  text-align: left;
+}
+.lista-amor li {
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  align-items: baseline;
+  gap: .4rem;
+  padding: .9rem 0;
+  border-bottom: 1px solid rgba(142, 181, 216, 0.14);
+}
+.lista-amor li:last-child { border-bottom: 0; }
+.lista-amor .numero {
+  font-family: var(--fonte-titulo);
+  font-size: var(--t-sm);
+  color: var(--luar);
+  opacity: .55;
+}
+
+/* --- Carta secreta escondida --- */
+.pista-secreta {
+  display: inline-block;
+  margin-top: .6rem;
+  padding: .4rem .8rem;
+  min-height: 44px;
+  background: none;
+  border: 0;
+  font-family: var(--fonte-mao);
+  font-size: var(--t-sm);
+  color: var(--luar);
+  opacity: .28;
+  cursor: pointer;
+  transition: opacity .8s ease, color .8s ease;
+}
+.pista-secreta:hover,
+.pista-secreta:focus-visible { opacity: .9; color: var(--brasa); }
+
+/* --- Envelope --- */
+.envelope {
+  position: relative;
+  width: min(23rem, 82vw);
+  aspect-ratio: 3 / 2;
+  margin: 1.4rem auto;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  perspective: 900px;
+}
+.envelope-corpo {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, #C9C0A8 0%, #B3A98F 55%, #9C927A 100%);
+  box-shadow: 0 22px 46px rgba(0,0,0,.55), inset 0 0 40px rgba(110,36,54,.08);
+}
+.envelope-dobra {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(200deg, #D9D2BD 0%, #C2B99F 100%);
+  clip-path: polygon(0 0, 100% 0, 50% 58%);
+  transform-origin: top center;
+  transition: transform 1.1s cubic-bezier(.65,.02,.3,1);
+  backface-visibility: hidden;
+  z-index: 3;
+}
+.envelope-lados {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #BFB69C 0%, #CCC3A9 50%, #BFB69C 100%);
+  clip-path: polygon(0 0, 50% 58%, 100% 0, 100% 100%, 0 100%);
+  z-index: 2;
+}
+.lacre {
+  position: absolute;
+  top: 46%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 32%, #8E3345 0%, var(--vinho) 55%, #4E1825 100%);
+  box-shadow: 0 5px 14px rgba(0,0,0,.5), inset -3px -4px 8px rgba(0,0,0,.35);
+  display: grid;
+  place-items: center;
+  font-family: var(--fonte-titulo);
+  font-size: 1.3rem;
+  color: rgba(217, 210, 189, .85);
+  z-index: 4;
+  transition: transform .9s ease, opacity .9s ease;
+}
+.envelope:hover .lacre,
+.envelope:focus-visible .lacre { transform: translate(-50%, -50%) scale(1.06); }
+
+.envelope.aberto .envelope-dobra { transform: rotateX(178deg); }
+.envelope.aberto .lacre { opacity: 0; transform: translate(-50%, -50%) scale(.5) rotate(25deg); }
+
+/* --- Fita que amarra o envelope ---
+   Fica na metade inferior, abaixo do lacre, como se prendesse o
+   envelope antes dele ser aberto. Some com uma torção suave. */
+.fita-horizontal {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 66%;
+  height: 20px;
+  margin-top: -10px;
+  background: linear-gradient(180deg, #8E3345 0%, var(--vinho) 48%, #4E1825 100%);
+  box-shadow: 0 3px 8px rgba(0,0,0,.4);
+  z-index: 3;
+  transform-origin: center;
+  transition: transform .7s cubic-bezier(.6,.04,.34,1), opacity .6s ease;
+}
+
+.laco {
+  position: absolute;
+  left: 50%;
+  top: 66%;
+  width: 58px;
+  height: 34px;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  filter: drop-shadow(0 3px 5px rgba(0,0,0,.4));
+  transition: transform .7s cubic-bezier(.6,.04,.34,1), opacity .6s ease;
+}
+
+.envelope.desamarrando .fita-horizontal {
+  transform: scaleX(.03) rotate(4deg);
+  opacity: 0;
+}
+.envelope.desamarrando .laco {
+  transform: translate(-50%, -50%) scale(.35) rotate(50deg);
+  opacity: 0;
+}
+
+/* --- Carta --- */
+.carta {
+  position: relative;
+  width: min(34rem, 100%);
+  margin: 0 auto;
+  padding: clamp(1.8rem, 6vw, 3rem) clamp(1.4rem, 5vw, 2.6rem);
+  background:
+    linear-gradient(180deg, rgba(222,215,195,.98), rgba(205,196,172,.96));
+  color: #2C2619;
+  text-align: left;
+  box-shadow: 0 30px 70px rgba(0,0,0,.6);
+  clip-path: polygon(0 .8%, 1.5% 0, 98.5% .6%, 100% 1.8%, 99.4% 98%, 98% 100%, 2% 99.2%, .5% 98%);
+}
+.carta p { color: #332C1E; }
+.carta .intro {
+  font-style: italic;
+  text-align: center;
+  color: #4A2B32;
+  padding-bottom: 1.2rem;
+  margin-bottom: 1.4rem;
+  border-bottom: 1px solid rgba(110, 36, 54, .2);
+}
+.carta .corpo {
+  font-family: var(--fonte-mao);
+  font-size: clamp(1.25rem, 4.6vw, 1.55rem);
+  line-height: 1.85;
+}
+.carta .assinatura-carta {
+  display: block;
+  margin-top: 1.6rem;
+  text-align: right;
+  font-family: var(--fonte-mao);
+  font-size: 1.5rem;
+  color: #4A2B32;
+}
+
+/* Flor prensada, guardada no canto da carta há muito tempo.
+   É também o gatilho discreto do quiz — por isso é um botão. */
+button.flor-prensada {
+  position: absolute;
+  right: clamp(.6rem, 3vw, 1.6rem);
+  bottom: clamp(.5rem, 3vw, 1.3rem);
+  width: clamp(46px, 10vw, 68px);
+  height: clamp(46px, 10vw, 68px);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  transform: rotate(-14deg);
+  opacity: .85;
+  filter: drop-shadow(0 2px 3px rgba(74,43,50,.25));
+  transition: transform .5s ease, opacity .5s ease, filter .5s ease;
+}
+button.flor-prensada svg { display: block; width: 100%; height: 100%; }
+button.flor-prensada:hover,
+button.flor-prensada:focus-visible {
+  transform: rotate(-6deg) scale(1.08);
+  opacity: 1;
+  filter: drop-shadow(0 3px 6px rgba(74,43,50,.35));
+}
+
+/* --- Jogo da memória (segredo: três toques na lua) --- */
+.janela-jogo {
+  width: min(24rem, 100%);
+}
+.janela-jogo .jogo-instrucao {
+  font-size: var(--t-sm);
+  color: #4A3F2E;
+  opacity: .85;
+  margin-bottom: 1rem;
+}
+.jogo-grade {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: .55rem;
+  perspective: 800px;
+}
+.carta-jogo {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition: transform .6s cubic-bezier(.5,.1,.25,1);
+}
+.carta-jogo.virada { transform: rotateY(180deg); }
+.carta-jogo.combinada { cursor: default; }
+
+.carta-jogo-verso,
+.carta-jogo-frente {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: 3px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+.carta-jogo-verso {
+  background:
+    radial-gradient(circle at 50% 42%, rgba(142,181,216,.22), transparent 65%),
+    linear-gradient(155deg, #1B3048, #101A2C);
+  border: 1px solid rgba(142, 181, 216, .3);
+  color: var(--luar);
+  font-size: 1.1rem;
+  opacity: .85;
+}
+.carta-jogo-frente {
+  transform: rotateY(180deg);
+  background: #C9C0A8;
+  border: 1px solid rgba(74,43,50,.25);
+}
+.carta-jogo-frente img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(.82) contrast(1.02);
+}
+.carta-jogo-frente .simbolo-par {
+  font-size: 1.5rem;
+  color: #4A2B32;
+}
+
+.carta-jogo.combinada .carta-jogo-frente {
+  border-color: rgba(200, 155, 90, .7);
+  box-shadow: inset 0 0 0 2px rgba(200, 155, 90, .5);
+}
+
+@keyframes jogo-errou {
+  0%, 100% { transform: rotateY(180deg) translateX(0); }
+  25% { transform: rotateY(180deg) translateX(-4px); }
+  75% { transform: rotateY(180deg) translateX(4px); }
+}
+.carta-jogo.errou { animation: jogo-errou .35s ease; }
+
+.jogo-progresso {
+  margin-top: 1rem;
+  font-size: var(--t-sm);
+  color: #4A3F2E;
+  opacity: .8;
+  text-align: center;
+}
+.jogo-progresso.completo { color: #6E2436; opacity: 1; font-family: var(--fonte-mao); font-size: 1.3rem; }
+
+/* --- Quiz (segredo: toque na flor da carta) --- */
+.janela-quiz { width: min(24rem, 100%); }
+.quiz-pergunta {
+  font-size: var(--t-md);
+  color: #3A2E22;
+  margin-bottom: 1.1rem;
+  line-height: 1.5;
+}
+.quiz-opcoes {
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+}
+.quiz-opcao {
+  padding: .7rem 1rem;
+  min-height: 48px;
+  text-align: left;
+  font-family: var(--fonte-corpo);
+  font-size: var(--t-sm);
+  color: #3A2E22;
+  background: rgba(74, 43, 50, .06);
+  border: 1px solid rgba(74, 43, 50, .22);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background .3s ease, border-color .3s ease, transform .2s ease;
+}
+.quiz-opcao:hover:not(:disabled) { background: rgba(74, 43, 50, .12); }
+.quiz-opcao:disabled { cursor: default; }
+.quiz-opcao.certa {
+  border-color: rgba(200, 155, 90, .8);
+  background: rgba(200, 155, 90, .18);
+  color: #4A2B32;
+}
+.quiz-opcao.errada { opacity: .55; }
+
+.quiz-progresso {
+  margin-top: 1.2rem;
+  font-size: var(--t-xs);
+  letter-spacing: .1em;
+  color: #4A3F2E;
+  opacity: .6;
+  text-align: center;
+}
+.quiz-final {
+  text-align: center;
+  font-family: var(--fonte-mao);
+  font-size: 1.4rem;
+  color: #6E2436;
+  padding: 1rem 0;
+}
+
+/* ---------------------------------------------------------------
+   7. FOTOS
+   --------------------------------------------------------------- */
+.foto {
+  position: relative;
+  display: inline-block;
+  margin: 1.2rem auto;
+  padding: 12px 12px 54px;
+  background: linear-gradient(175deg, #E6E0CC, #CFC7AE);
+  box-shadow: 0 16px 34px rgba(0,0,0,.5);
+  transform: rotate(-2.2deg);
+  transition: transform .7s cubic-bezier(.22,.61,.36,1), box-shadow .7s ease;
+  max-width: min(20rem, 78vw);
+}
+.foto:nth-of-type(even) { transform: rotate(1.8deg); }
+.foto:hover { transform: rotate(0deg) scale(1.03); box-shadow: 0 22px 44px rgba(0,0,0,.6); }
+
+.foto img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: saturate(.55) contrast(1.05) brightness(.92)
+          sepia(.12) hue-rotate(178deg);
+  transition: filter 2s ease;
+}
+/* Conforme a história avança, as fotos ganham cor */
+body[data-act="2"] .foto img { filter: saturate(.78) contrast(1.02) brightness(.97); }
+body[data-act="3"] .foto img { filter: saturate(1) contrast(1) brightness(1); }
+
+.foto figcaption {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 14px;
+  font-family: var(--fonte-mao);
+  font-size: 1.15rem;
+  line-height: 1.3;
+  color: #4A3F2E;
+  text-align: center;
+}
+/* Fita adesiva */
+.foto::before {
+  content: "";
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-3deg);
+  width: 76px;
+  height: 26px;
+  background: rgba(217, 210, 189, .34);
+  border-left: 1px solid rgba(255,255,255,.18);
+  border-right: 1px solid rgba(255,255,255,.18);
+}
+
+/* Moldura oval, usada no Capítulo III */
+.retratos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.6rem;
+}
+.retrato {
+  width: min(12rem, 40vw);
+  margin: 0;
+  padding: 10px;
+  background: linear-gradient(150deg, #3A2E22, #1F1913);
+  border-radius: 50% / 42%;
+  box-shadow: 0 14px 30px rgba(0,0,0,.55), inset 0 0 0 2px rgba(200,155,90,.25);
+}
+.retrato img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: 50% / 42%;
+  filter: saturate(.6) brightness(.92);
+  transition: filter 2s ease;
+}
+body[data-act="3"] .retrato img { filter: saturate(1) brightness(1); }
+
+/* Placeholder desenhado quando a foto não existe */
+.foto-vazia {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: repeating-linear-gradient(135deg,
+    rgba(27,48,72,.25) 0 8px, rgba(16,26,44,.25) 8px 16px);
+  color: var(--luar);
+  font-size: 2rem;
+  opacity: .55;
+}
+
+/* ---------------------------------------------------------------
+   8. ÁUDIO, RELER A CARTA E CONTADOR
+   --------------------------------------------------------------- */
+#contador-borboletas {
+  position: fixed;
+  z-index: 20;
+  left: max(1rem, env(safe-area-inset-left));
+  top: max(1rem, env(safe-area-inset-top));
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .4rem .7rem;
+  font-family: var(--fonte-titulo);
+  font-size: .9rem;
+  color: var(--luar);
+  background: rgba(8, 12, 22, .5);
+  border: 1px solid rgba(142, 181, 216, .25);
+  border-radius: 999px;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity .8s ease, transform .8s ease;
+}
+#contador-borboletas.visivel { opacity: .8; transform: translateY(0); }
+#contador-borboletas[hidden] { display: none; }
+.icone-borboleta { font-size: .95rem; filter: saturate(1.1); }
+
+@keyframes pulsar-contador {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.28); }
+  100% { transform: scale(1); }
+}
+#contador-borboletas.atualizado #contador-numero {
+  display: inline-block;
+  animation: pulsar-contador .5s ease;
+}
+#reler-carta {
+  position: fixed;
+  z-index: 20;
+  left: max(1rem, env(safe-area-inset-left));
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  font-size: 1.15rem;
+  color: var(--luar);
+  background: rgba(8, 12, 22, .55);
+  border: 1px solid rgba(142, 181, 216, .3);
+  border-radius: 50%;
+  cursor: pointer;
+  opacity: .5;
+  transition: opacity .4s ease, color .4s ease, border-color .4s ease,
+              transform .4s ease;
+}
+#reler-carta:hover, #reler-carta:focus-visible { opacity: 1; }
+#reler-carta[hidden] { display: none; }
+
+/* Ela chega discretamente na primeira vez que fica disponível */
+@keyframes chegar-reler {
+  from { opacity: 0; transform: scale(.6); }
+  to   { opacity: .5; transform: scale(1); }
+}
+#reler-carta.disponivel { animation: chegar-reler .8s cubic-bezier(.22,.61,.36,1); }
+
+/* A carta reaberta usa o mesmo visual da carta original, só que
+   dentro do overlay, com um pouco mais de respiro e sem os
+   parágrafos aparecendo aos poucos — ela já leu a carta uma vez. */
+.carta-flutuante {
+  max-height: 84vh;
+  overflow-y: auto;
+  position: relative;
+}
+.carta-flutuante .corpo .paragrafo { opacity: 1; animation: none; }
+#audio-control {
+  position: fixed;
+  z-index: 20;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+#audio-toggle {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  font-size: 1.15rem;
+  color: var(--luar);
+  background: rgba(8, 12, 22, .55);
+  border: 1px solid rgba(142, 181, 216, .3);
+  border-radius: 50%;
+  cursor: pointer;
+  opacity: .5;
+  transition: opacity .4s ease, color .4s ease, border-color .4s ease;
+}
+#audio-toggle:hover,
+#audio-toggle:focus-visible { opacity: 1; }
+#audio-toggle[aria-pressed="true"] { opacity: .95; color: var(--pergaminho); border-color: var(--luar); }
+
+.audio-panel {
+  width: 0;
+  overflow: hidden;
+  transition: width .5s ease;
+}
+#audio-control:hover .audio-panel,
+#audio-control:focus-within .audio-panel { width: 92px; }
+
+#volume {
+  width: 92px;
+  accent-color: var(--luar);
+  background: transparent;
+  cursor: pointer;
+}
+
+/* ---------------------------------------------------------------
+   9. UTILIDADES
+   --------------------------------------------------------------- */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Recado da borboleta */
+#whisper {
+  position: fixed;
+  z-index: 25;
+  left: 50%;
+  bottom: 11vh;
+  transform: translate(-50%, 14px);
+  max-width: min(22rem, 84vw);
+  padding: .7rem 1.2rem;
+  font-family: var(--fonte-mao);
+  font-size: 1.28rem;
+  line-height: 1.4;
+  text-align: center;
+  color: var(--pergaminho);
+  background: rgba(8, 12, 22, .72);
+  border: 1px solid rgba(142, 181, 216, .22);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .9s ease, transform .9s ease;
+}
+#whisper.visivel { opacity: 1; transform: translate(-50%, 0); }
+
+/* Loader */
+#loader {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  background: var(--noite);
+  transition: opacity .9s ease, visibility .9s;
+}
+#loader.pronto { opacity: 0; visibility: hidden; }
+.loader-butterfly { width: 64px; height: 48px; }
+.loader-butterfly .wing { fill: rgba(95, 168, 211, .85); transform-origin: 32px 24px; }
+.loader-butterfly .body { stroke: var(--pergaminho); stroke-width: 1.5; stroke-linecap: round; }

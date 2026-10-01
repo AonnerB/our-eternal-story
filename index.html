@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <!-- O título e a descrição são preenchidos pelo config.js.
+       Os valores abaixo são o que aparece no preview do link antes do
+       JavaScript rodar — mantidos propositalmente vagos para não
+       entregar a surpresa. -->
+  <title>Até a Última Página</title>
+  <meta name="description" content="Uma história em algumas páginas.">
+  <meta name="theme-color" content="#080C16">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Até a Última Página">
+  <meta property="og:description" content="Uma história em algumas páginas.">
+
+  <!-- Favicon: borboleta desenhada em SVG, sem arquivo externo -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 8c-3-5-11-6-13-1-2 5 3 9 7 10-4 2-8 6-6 10 3 5 10 1 12-4 2 5 9 9 12 4 2-4-2-8-6-10 4-1 9-5 7-10-2-5-10-4-13 1z' fill='%235FA8D3'/%3E%3Cpath d='M16 7v18' stroke='%23D9D2BD' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=La+Belle+Aurore&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+
+<body data-scene="loading" data-act="1">
+
+  <!-- ===== Tela de carregamento ===== -->
+  <div id="loader" role="status" aria-live="polite">
+    <svg class="loader-butterfly" viewBox="0 0 64 48" aria-hidden="true">
+      <g class="wing wing-left">
+        <path d="M32 24C26 8 8 4 4 14c-4 10 10 18 20 20-8 4-16 12-12 20 6 10 20 0 20-10z"/>
+      </g>
+      <g class="wing wing-right">
+        <path d="M32 24c6-16 24-20 28-10 4 10-10 18-20 20 8 4 16 12 12 20-6 10-20 0-20-10z"/>
+      </g>
+      <line class="body" x1="32" y1="6" x2="32" y2="44"/>
+    </svg>
+    <span class="sr-only">Carregando</span>
+  </div>
+
+  <!-- ===== Céu: lua, estrelas, árvores, névoa ===== -->
+  <div id="sky" aria-hidden="true">
+    <div class="stars" id="stars"></div>
+
+    <div class="moon-wrap" id="moon-wrap">
+      <button class="moon" id="moon" type="button" tabindex="-1" aria-hidden="true">
+        <span class="moon-halo"></span>
+        <span class="moon-halo interno"></span>
+        <svg class="moon-disc" viewBox="0 0 200 200" aria-hidden="true">
+          <defs>
+            <!-- Luz vindo do alto à esquerda -->
+            <radialGradient id="luz-lua" cx="34%" cy="28%" r="78%">
+              <stop offset="0%"   stop-color="#FFFEF8"/>
+              <stop offset="34%"  stop-color="#EDF1F6"/>
+              <stop offset="62%"  stop-color="#C4D2E1"/>
+              <stop offset="86%"  stop-color="#93A9C2"/>
+              <stop offset="100%" stop-color="#6F87A4"/>
+            </radialGradient>
+            <!-- Luz azulada refletida na borda inferior direita -->
+            <radialGradient id="borda-lua" cx="76%" cy="80%" r="52%">
+              <stop offset="0%"   stop-color="#8EB5D8" stop-opacity=".55"/>
+              <stop offset="100%" stop-color="#8EB5D8" stop-opacity="0"/>
+            </radialGradient>
+            <!-- Textura fina da superfície -->
+            <filter id="textura-lua" x="-10%" y="-10%" width="120%" height="120%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.9"
+                            numOctaves="4" seed="7" result="ruido"/>
+              <feColorMatrix in="ruido" type="saturate" values="0" result="cinza"/>
+              <feComponentTransfer in="cinza" result="suave">
+                <feFuncA type="linear" slope="0.16"/>
+              </feComponentTransfer>
+              <feComposite in="suave" in2="SourceGraphic" operator="in"/>
+            </filter>
+            <clipPath id="disco-lua">
+              <circle cx="100" cy="100" r="96"/>
+            </clipPath>
+          </defs>
+
+          <circle cx="100" cy="100" r="96" fill="url(#luz-lua)"/>
+
+          <g clip-path="url(#disco-lua)">
+            <!-- Mares: manchas amplas e suaves -->
+            <g fill="#A8BACE" opacity=".42">
+              <ellipse cx="72"  cy="66"  rx="30" ry="24" transform="rotate(-18 72 66)"/>
+              <ellipse cx="120" cy="52"  rx="20" ry="15" transform="rotate(12 120 52)"/>
+              <ellipse cx="128" cy="112" rx="34" ry="27" transform="rotate(24 128 112)"/>
+              <ellipse cx="66"  cy="132" rx="24" ry="19" transform="rotate(-8 66 132)"/>
+              <ellipse cx="98"  cy="96"  rx="14" ry="11"/>
+            </g>
+
+            <!-- Crateras com relevo: sombra de um lado, luz do outro -->
+            <g>
+              <circle cx="78"  cy="60"  r="15" fill="#93A7BE" opacity=".5"/>
+              <circle cx="75"  cy="57"  r="13" fill="#D6E0EC" opacity=".35"/>
+              <circle cx="136" cy="88"  r="9"  fill="#93A7BE" opacity=".5"/>
+              <circle cx="134" cy="86"  r="7.5" fill="#D6E0EC" opacity=".3"/>
+              <circle cx="104" cy="134" r="11" fill="#93A7BE" opacity=".45"/>
+              <circle cx="102" cy="132" r="9"  fill="#D6E0EC" opacity=".28"/>
+              <circle cx="56"  cy="104" r="7"  fill="#93A7BE" opacity=".4"/>
+              <circle cx="148" cy="136" r="6"  fill="#93A7BE" opacity=".35"/>
+              <circle cx="116" cy="164" r="8"  fill="#93A7BE" opacity=".3"/>
+              <circle cx="46"  cy="72"  r="5"  fill="#93A7BE" opacity=".35"/>
+            </g>
+
+            <!-- Grão fino sobre tudo -->
+            <circle cx="100" cy="100" r="96" filter="url(#textura-lua)" fill="#FFFFFF"/>
+
+            <!-- Sombra do lado oposto à luz -->
+            <circle cx="100" cy="100" r="96" fill="url(#borda-lua)"/>
+            <circle cx="132" cy="132" r="96" fill="#1B3048" opacity=".22"/>
+          </g>
+
+          <!-- Fio de luz na borda superior -->
+          <circle cx="100" cy="100" r="95" fill="none"
+                  stroke="#FFFDF2" stroke-opacity=".5" stroke-width="1.5"
+                  stroke-dasharray="120 240" stroke-dashoffset="30"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="warm-glow" id="warm-glow"></div>
+
+    <!-- Constelação em forma de coração: acende devagar a partir do
+         Capítulo IV. Desenhada em JavaScript a partir de uma curva
+         matemática de coração, não é uma imagem. -->
+    <svg id="constelacao" viewBox="0 0 100 60" preserveAspectRatio="xMidYMin meet" aria-hidden="true">
+      <polyline id="constelacao-linha" fill="none" stroke="rgba(233,237,244,.4)"
+                stroke-width="0.18" stroke-dasharray="0.6 1.4" stroke-linecap="round"/>
+      <g id="constelacao-estrelas"></g>
+    </svg>
+
+    <!-- Claridade no horizonte: é ela que dá fundo para as árvores.
+         Sem essa faixa de luz, silhueta preta sobre céu preto some. -->
+    <div class="horizonte" aria-hidden="true"></div>
+
+    <!-- Mata em duas camadas, cada uma um desenho que se repete na
+         horizontal: assim ela cobre qualquer largura de tela sem
+         esticar nem cortar. A de trás é menor e mais clara — o ar
+         entre ela e nós rouba contraste, e é isso que cria distância. -->
+    <div class="treeline treeline-longe" aria-hidden="true"></div>
+    <div class="fog-chao" aria-hidden="true"></div>
+    <div class="treeline treeline-perto" aria-hidden="true"></div>
+
+    <!-- As duas árvores da frente, uma em cada canto: são elas que
+         emolduram a cena e dão o primeiro plano. -->
+    <svg class="arvore arvore-esq" viewBox="0 0 150 340" preserveAspectRatio="xMinYMax meet" aria-hidden="true">
+      <g stroke="#03060B" fill="none" stroke-linecap="round">
+        <path d="M34 340V96" stroke-width="9"/>
+        <path d="M34 188 L2 148M34 232l30-30M34 148l26-40M34 272l-24-18" stroke-width="5"/>
+        <path d="M6 152l-4-22M8 150l-16-6M64 202l16-26M64 202l22 4M60 108l10-26M60 108l24-4M10 254l-16-10M34 96l-18-26M34 96l20-22M54 74l16-14M54 74l4-22M16 70L2 56M16 70l-2-20" stroke-width="2.6"/>
+        <path d="M2 130l-8-14M-6 144l-12-4M80 176l10-16M86 206l20-2M70 82l6-18M84 104l18-6M-6 244l-12-8M14 50l-8-14M58 52l10-14M70 60l14-8" stroke-width="1.5"/>
+      </g>
+    </svg>
+
+    <svg class="arvore arvore-dir" viewBox="0 0 150 340" preserveAspectRatio="xMaxYMax meet" aria-hidden="true">
+      <g stroke="#03060B" fill="none" stroke-linecap="round">
+        <path d="M116 340V86" stroke-width="9"/>
+        <path d="M116 178l32-40M116 222l-30-30M116 138l-26-40M116 262l24-18" stroke-width="5"/>
+        <path d="M144 142l4-22M146 140l16-6M86 192l-16-26M86 192l-22 4M90 98l-10-26M90 98l-24-4M140 244l16-10M116 86l18-26M116 86l-20-22M96 64L80 50M96 64l-4-22M134 60l14-14M134 60l2-20" stroke-width="2.6"/>
+        <path d="M148 120l8-14M156 134l12-4M70 166l-10-16M64 196l-20-2M80 72l-6-18M66 94l-18-6M156 234l12-8M136 40l8-14M92 42l-10-14M80 50l-14-8" stroke-width="1.5"/>
+      </g>
+    </svg>
+
+    <div class="fog fog-back"></div>
+    <div class="fog fog-mid"></div>
+    <div class="fog fog-front"></div>
+
+    <!-- Teias nos cantos, com orvalho e uma aranha parada no fio.
+         Aparecem só nos capítulos de tom mais melancólico.
+         A aranha é desenhada em SVG: nenhuma imagem externa. -->
+    <svg class="teia teia-esq" viewBox="0 0 130 130" aria-hidden="true">
+      <g class="teia-fios" fill="none" stroke="rgba(217,210,189,.42)" stroke-width=".7" stroke-linecap="round">
+        <!-- raios -->
+        <path d="M2 2 L124 26"/>
+        <path d="M2 2 L104 56"/>
+        <path d="M2 2 L76 84"/>
+        <path d="M2 2 L44 108"/>
+        <path d="M2 2 L18 124"/>
+        <path d="M2 2 L122 6"/>
+        <path d="M2 2 L6 122"/>
+        <!-- espirais -->
+        <path d="M22 4 Q20 20 5 23"/>
+        <path d="M44 8 Q40 40 9 45"/>
+        <path d="M68 13 Q60 62 13 69"/>
+        <path d="M94 19 Q82 86 18 94"/>
+        <path d="M118 25 Q102 108 23 118"/>
+      </g>
+      <g class="orvalho" fill="rgba(233,237,244,.85)">
+        <circle cx="26" cy="20" r="1.3"/>
+        <circle cx="17" cy="41" r="1"/>
+        <circle cx="52" cy="26" r="1.1"/>
+        <circle cx="30" cy="76" r="1.2"/>
+        <circle cx="66" cy="45" r=".9"/>
+      </g>
+      <!-- a moradora da teia -->
+      <g class="teia-aranha" transform="translate(58 62) scale(.9)">
+        <g class="teia-pernas" fill="none" stroke="rgba(6,10,18,.92)" stroke-width="1.5" stroke-linecap="round">
+          <path d="M-2 -1 L-9 -8 L-15 -3"/>
+          <path d="M-2 0 L-10 -3 L-17 3"/>
+          <path d="M-2 1 L-10 2 L-16 9"/>
+          <path d="M-2 2 L-8 6 L-12 13"/>
+          <path d="M2 -1 L9 -8 L15 -3"/>
+          <path d="M2 0 L10 -3 L17 3"/>
+          <path d="M2 1 L10 2 L16 9"/>
+          <path d="M2 2 L8 6 L12 13"/>
+        </g>
+        <ellipse cx="0" cy="-5.5" rx="4.6" ry="5.2" fill="#070B14"/>
+        <ellipse cx="-1.4" cy="-7.4" rx="1.8" ry="2" fill="rgba(186,214,240,.34)"/>
+        <ellipse cx="0" cy="1.4" rx="2.9" ry="2.5" fill="#05080F"/>
+        <g class="teia-olhos" fill="rgba(196,228,252,.95)">
+          <circle cx="-1.3" cy="2.4" r=".7"/>
+          <circle cx="1.3" cy="2.4" r=".7"/>
+        </g>
+      </g>
+    </svg>
+
+    <svg class="teia teia-dir" viewBox="0 0 130 130" aria-hidden="true">
+      <g class="teia-fios" fill="none" stroke="rgba(217,210,189,.42)" stroke-width=".7" stroke-linecap="round">
+        <path d="M2 2 L124 26"/>
+        <path d="M2 2 L104 56"/>
+        <path d="M2 2 L76 84"/>
+        <path d="M2 2 L44 108"/>
+        <path d="M2 2 L18 124"/>
+        <path d="M2 2 L122 6"/>
+        <path d="M2 2 L6 122"/>
+        <path d="M22 4 Q20 20 5 23"/>
+        <path d="M44 8 Q40 40 9 45"/>
+        <path d="M68 13 Q60 62 13 69"/>
+        <path d="M94 19 Q82 86 18 94"/>
+        <path d="M118 25 Q102 108 23 118"/>
+      </g>
+      <g class="orvalho" fill="rgba(233,237,244,.85)">
+        <circle cx="26" cy="20" r="1.3"/>
+        <circle cx="17" cy="41" r="1"/>
+        <circle cx="52" cy="26" r="1.1"/>
+        <circle cx="30" cy="76" r="1.2"/>
+        <circle cx="66" cy="45" r=".9"/>
+      </g>
+    </svg>
+
+    <div class="vignette"></div>
+  </div>
+
+  <!-- ===== Canvas de partículas e borboletas ===== -->
+  <canvas id="particles" aria-hidden="true"></canvas>
+
+  <!-- ===== Textura de grão (aspecto de filme) ===== -->
+  <div id="grain" aria-hidden="true"></div>
+
+  <!-- ===== Palco: cada cena é montada aqui pelo JavaScript ===== -->
+  <main id="stage" aria-live="polite"></main>
+
+  <!-- ===== Cortina usada nas transições entre cenas ===== -->
+  <div id="curtain" aria-hidden="true"></div>
+
+  <!-- ===== Recado que aparece ao tocar numa borboleta ===== -->
+  <div id="whisper" role="status" aria-live="polite"></div>
+
+  <!-- ===== Contador de borboletas encontradas ===== -->
+  <div id="contador-borboletas" aria-live="polite" hidden>
+    <span class="icone-borboleta" aria-hidden="true">🦋</span>
+    <span id="contador-numero">0</span>
+  </div>
+
+  <!-- ===== Reler a carta: aparece só depois que ela abrir o envelope ===== -->
+  <button id="reler-carta" type="button" aria-label="Reler a carta" hidden>✉</button>
+
+  <!-- ===== Controle de música (escondido se não houver arquivo) ===== -->
+  <div id="audio-control" hidden>
+    <button id="audio-toggle" type="button" aria-label="Ligar a música" aria-pressed="false">♫</button>
+    <div class="audio-panel" id="audio-panel">
+      <label for="volume" class="sr-only">Volume da música</label>
+      <input type="range" id="volume" min="0" max="100" value="35">
+    </div>
+  </div>
+
+  <audio id="music" loop preload="none"></audio>
+
+  <!-- ===== Scripts (ordem importa; sem módulos, para funcionar em file://) ===== -->
+  <script src="config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/sfx.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/particles.js"></script>
+  <script src="js/scenes.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
